@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 HackerGram - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ====== SEMUA STYLE SAMA SEPERTI SEBELUMNYA ====== */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        body.hacked {
+            background: linear-gradient(135deg, #0a0a0a, #1a0033, #0a0a0a);
+        }
+        body.hacked .container {
+            border-color: #ff00ff;
+            box-shadow: 0 0 80px rgba(255,0,255,0.3), 0 0 150px rgba(0,255,255,0.1);
+        }
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(0,255,255,0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0px) translateX(0px); opacity:0; }
+            10% { opacity:1; }
+            90% { opacity:1; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity:0; }
+        }
+        .container {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 100px rgba(0,255,255,0.05);
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.6s ease-out;
+            transition: all 0.8s ease;
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(30px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+        #loginForm { display:block; transition:all 0.8s ease; }
+        #loginForm.hidden { display:none; }
+        #welcomePage { display:none; animation:welcomeSlideIn 0.8s ease-out; text-align:center; }
+        #welcomePage.show { display:block; }
+        @keyframes welcomeSlideIn {
+            0% { opacity:0; transform:scale(0.8) rotate(-5deg); }
+            100% { opacity:1; transform:scale(1) rotate(0deg); }
+        }
+        .welcome-icon { font-size:80px; margin-bottom:15px; animation:bounce 2s infinite; }
+        @keyframes bounce {
+            0%,100% { transform:translateY(0); }
+            50% { transform:translateY(-15px); }
+        }
+        .welcome-title {
+            font-size:32px; font-weight:700;
+            background: linear-gradient(135deg, #ff00ff, #00f5a0, #ff00ff);
+            background-size:300% 300%;
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            background-clip:text;
+            animation:gradientShift 3s ease infinite;
+            margin-bottom:10px;
+        }
+        @keyframes gradientShift {
+            0%,100% { background-position:0% 50%; }
+            50% { background-position:100% 50%; }
+        }
+        .welcome-subtitle { color:rgba(255,255,255,0.6); font-size:16px; margin-bottom:20px; letter-spacing:2px; }
+        .welcome-divider { width:80px; height:3px; background:linear-gradient(90deg,transparent,#ff00ff,transparent); margin:15px auto; border-radius:10px; }
+        .welcome-message {
+            color:rgba(255,255,255,0.8); font-size:15px; line-height:1.8;
+            padding:20px; background:rgba(255,255,255,0.05); border-radius:15px;
+            border:1px solid rgba(255,0,255,0.2); margin:20px 0; text-align:left;
+        }
+        .welcome-message .highlight { color:#ff00ff; font-weight:600; }
+        .welcome-message .highlight-green { color:#00f5a0; font-weight:600; }
+        .welcome-stats {
+            display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0;
+        }
+        .stat-card {
+            background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;
+            border:1px solid rgba(255,255,255,0.05); transition:all 0.3s;
+        }
+        .stat-card:hover { transform:translateY(-3px); border-color:rgba(255,0,255,0.3); }
+        .stat-card .stat-number { font-size:24px; font-weight:700; color:#00f5a0; display:block; }
+        .stat-card .stat-label { font-size:11px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; }
+        .welcome-username { color:#ff00ff; font-size:18px; font-weight:600; margin:10px 0; }
+        .btn-logout {
+            width:100%; padding:14px; background:rgba(255,0,0,0.2);
+            border:1px solid rgba(255,0,0,0.3); border-radius:12px;
+            color:#ff4444; font-size:16px; font-weight:600; cursor:pointer;
+            transition:all 0.3s; font-family:inherit; margin-top:10px;
+        }
+        .btn-logout:hover { background:rgba(255,0,0,0.3); transform:scale(1.02); }
+        .btn-logout i { margin-right:8px; }
+        .matrix-rain {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            pointer-events:none; z-index:0; opacity:0.05; overflow:hidden;
+        }
+        .matrix-rain span {
+            position:absolute; color:#00ff41; font-family:'Courier New',monospace;
+            font-size:14px; animation:matrixDrop 20s linear infinite;
+        }
+        @keyframes matrixDrop {
+            0% { transform:translateY(-100vh); opacity:0; }
+            10% { opacity:1; }
+            90% { opacity:1; }
+            100% { transform:translateY(100vh); opacity:0; }
+        }
+        .logo { text-align:center; margin-bottom:35px; }
+        .logo-icon {
+            font-size:50px;
+            background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom:5px;
+        }
+        .logo h1 {
+            font-size:32px; font-weight:700;
+            background:linear-gradient(135deg,#00f5a0,#00d9f5);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            letter-spacing:-0.5px;
+        }
+        .logo p { color:rgba(255,255,255,0.4); font-size:13px; margin-top:5px; letter-spacing:3px; text-transform:uppercase; }
+        .form-group { margin-bottom:20px; position:relative; }
+        .form-group label {
+            display:block; color:rgba(255,255,255,0.6); font-size:13px;
+            font-weight:600; margin-bottom:8px; letter-spacing:0.5px;
+        }
+        .form-group .input-wrapper {
+            position:relative; display:flex; align-items:center;
+            background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.08);
+            border-radius:15px; transition:all 0.3s ease;
+        }
+        .form-group .input-wrapper:focus-within {
+            border-color:#00f5a0; box-shadow:0 0 20px rgba(0,245,160,0.1);
+            background:rgba(255,255,255,0.08);
+        }
+        .form-group .input-wrapper .icon {
+            padding:0 15px; color:rgba(255,255,255,0.3); font-size:18px;
+            transition:color 0.3s;
+        }
+        .form-group .input-wrapper:focus-within .icon { color:#00f5a0; }
+        .form-group input {
+            width:100%; padding:16px 16px 16px 0; background:transparent;
+            border:none; color:#fff; font-size:16px; outline:none; font-family:inherit;
+        }
+        .form-group input::placeholder { color:rgba(255,255,255,0.2); }
+        .form-group .toggle-password {
+            padding-right:15px; color:rgba(255,255,255,0.3); cursor:pointer;
+            transition:color 0.3s;
+        }
+        .form-group .toggle-password:hover { color:rgba(255,255,255,0.6); }
+        .form-options {
+            display:flex; justify-content:space-between; align-items:center;
+            margin:20px 0 30px;
+        }
+        .form-options label {
+            color:rgba(255,255,255,0.5); font-size:14px; cursor:pointer;
+            display:flex; align-items:center; gap:8px;
+        }
+        .form-options label input[type="checkbox"] {
+            width:18px; height:18px; accent-color:#00f5a0; cursor:pointer;
+        }
+        .form-options a { color:#00f5a0; text-decoration:none; font-size:14px; font-weight:600; transition:color 0.3s; }
+        .form-options a:hover { color:#00d9f5; }
+        .btn-login {
+            width:100%; padding:16px;
+            background:linear-gradient(135deg,#00f5a0,#00d9f5);
+            border:none; border-radius:15px; color:#0f0c29;
+            font-size:18px; font-weight:700; cursor:pointer;
+            transition:all 0.3s ease; position:relative; overflow:hidden;
+            font-family:inherit; letter-spacing:0.5px;
+        }
+        .btn-login:hover { transform:scale(1.02); box-shadow:0 10px 30px rgba(0,245,160,0.3); }
+        .btn-login:active { transform:scale(0.98); }
+        .btn-login .btn-text { position:relative; z-index:2; }
+        .btn-login .ripple {
+            position:absolute; top:50%; left:50%; width:0; height:0;
+            background:rgba(255,255,255,0.3); border-radius:50%;
+            transform:translate(-50%,-50%);
+            transition:width 0.6s, height 0.6s;
+        }
+        .btn-login:active .ripple { width:300px; height:300px; }
+        .divider { display:flex; align-items:center; margin:25px 0; gap:15px; }
+        .divider .line {
+            flex:1; height:1px;
+            background:linear-gradient(to right,transparent,rgba(255,255,255,0.1),transparent);
+        }
+        .divider span { color:rgba(255,255,255,0.3); font-size:12px; text-transform:uppercase; letter-spacing:2px; }
+        .social-login { display:flex; gap:12px; justify-content:center; margin-bottom:25px; }
+        .social-btn {
+            flex:1; padding:12px; background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08); border-radius:12px;
+            color:rgba(255,255,255,0.6); font-size:20px; cursor:pointer;
+            transition:all 0.3s ease; text-align:center;
+        }
+        .social-btn:hover { background:rgba(255,255,255,0.1); transform:translateY(-2px); }
+        .social-btn.google:hover { color:#ea4335; border-color:#ea4335; }
+        .social-btn.facebook:hover { color:#1877f2; border-color:#1877f2; }
+        .social-btn.twitter:hover { color:#1da1f2; border-color:#1da1f2; }
+        .register-link { text-align:center; color:rgba(255,255,255,0.4); font-size:14px; margin-top:20px; }
+        .register-link a { color:#00f5a0; text-decoration:none; font-weight:600; transition:color 0.3s; }
+        .register-link a:hover { color:#00d9f5; }
+        #message {
+            margin-top:20px; padding:15px; border-radius:12px;
+            display:none; font-weight:600; text-align:center; font-size:14px;
+            animation:slideUp 0.4s ease-out;
+        }
+        #message.success { display:block; background:rgba(0,245,160,0.1); border:1px solid #00f5a0; color:#00f5a0; }
+        #message.error { display:block; background:rgba(255,0,0,0.1); border:1px solid #ff0044; color:#ff0044; }
+        .status-bar {
+            margin-top:25px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05);
+            display:flex; justify-content:space-between; align-items:center;
+            color:rgba(255,255,255,0.2); font-size:11px;
+        }
+        .status-bar .status-indicator { display:flex; align-items:center; gap:8px; }
+        .status-dot {
+            width:8px; height:8px; border-radius:50%; display:inline-block;
+            transition:background 0.3s;
+        }
+        .status-dot.offline { background:#ff0044; box-shadow:0 0 10px rgba(255,0,68,0.3); }
+        .status-dot.online { background:#00f5a0; box-shadow:0 0 10px rgba(0,245,160,0.3); }
+        .status-dot.hacked {
+            background:#ff00ff; box-shadow:0 0 20px rgba(255,0,255,0.5);
+            animation:pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { transform:scale(1); }
+            50% { transform:scale(1.5); }
+        }
+        .security-badge { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,0.15); font-size:11px; }
+        .security-badge i { font-size:14px; }
+        .glow {
+            position:absolute; width:200px; height:200px; border-radius:50%;
+            filter:blur(80px); opacity:0.1; pointer-events:none;
+        }
+        .glow-1 { top:-100px; right:-100px; background:#00f5a0; }
+        .glow-2 { bottom:-100px; left:-100px; background:#00d9f5; }
+        .spinner {
+            display:none; width:20px; height:20px;
+            border:3px solid rgba(255,255,255,0.3);
+            border-top-color:#0f0c29; border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:0 auto;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .btn-login.loading .btn-text { display:none; }
+        .btn-login.loading .spinner { display:block; }
+        @media (max-width:480px) {
+            .container { padding:30px 20px; }
+            .logo h1 { font-size:26px; }
+            .form-options { flex-direction:column; gap:12px; align-items:flex-start; }
+            .social-login { flex-direction:column; }
+            .social-btn { padding:14px; }
+            .welcome-stats { grid-template-columns:1fr; }
+            .welcome-title { font-size:24px; }
+        }
+        /* Pesan error menampilkan password */
+        .error-password {
+            background: #1a1a2e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #0ff;
+            border: 1px solid #0ff;
+            margin: 8px 0;
+            display: inline-block;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background effects -->
+    <div class="matrix-rain" id="matrixRain"></div>
+    <div class="particles" id="particles"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="container" id="mainContainer">
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-crown"></i></div>
+                <h1>HackerGram</h1>
+                <p>🔐 Elite Security</p>
+            </div>
+
+            <form id="loginFormSubmit" autocomplete="off">
+                <div class="form-group">
+                    <label><i class="fas fa-user" style="margin-right:6px;color:rgba(255,255,255,0.3);"></i> Username / Email</label>
+                    <div class="input-wrapper">
+                        <span class="icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="usernameInput" placeholder="Masukkan email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock" style="margin-right:6px;color:rgba(255,255,255,0.3);"></i> Password</label>
+                    <div class="input-wrapper">
+                        <span class="icon"><i class="fas fa-key"></i></span>
+                        <input type="password" id="passwordInput" placeholder="Masukkan password" required>
+                        <span class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label><input type="checkbox" checked> <span>Ingat saya</span></label>
+                    <a href="#">Lupa password?</a>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span class="ripple"></span>
+                    <span class="btn-text"><i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Masuk</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <div class="divider"><span class="line"></span><span>Atau</span><span class="line"></span></div>
+
+            <div class="social-login">
+                <button class="social-btn google"><i class="fab fa-google"></i></button>
+                <button class="social-btn facebook"><i class="fab fa-facebook-f"></i></button>
+                <button class="social-btn twitter"><i class="fab fa-twitter"></i></button>
+            </div>
+
+            <div class="register-link">
+                Belum punya akun? <a href="#">Daftar sekarang</a>
+            </div>
+
+            <div id="message"></div>
+
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot offline" id="statusDot"></span>
+                    <span id="statusText">🔒 Secure Connection</span>
+                </div>
+                <div class="security-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>SSL Encrypted</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WELCOME PAGE -->
+        <div id="welcomePage">
+            <div class="welcome-icon">🚀</div>
+            <div class="welcome-title">🎉 SELAMAT DATANG!</div>
+            <div class="welcome-subtitle">✦ ANDA BERHASIL MEMBOBOL SISTEM ✦</div>
+            <div class="welcome-divider"></div>
+
+            <div class="welcome-username" id="displayUsername">👤 @Azrielal</div>
+
+            <div class="welcome-message" id="welcomeMessage">
+                🔓 <span class="highlight">Akses Diberikan!</span><br><br>
+                Pesan rahasia: <span class="highlight-green">'KUNCI_KEBERHASILAN_ADALAH_KETAHUI_KODE'</span><br><br>
+                <span style="color:rgba(255,255,255,0.5);font-size:13px;">
+                    🌟 Selamat bergabung dengan elite hacker!<br>
+                    💡 Gunakan pengetahuan ini untuk kebaikan!
+                </span>
+            </div>
+
+            <div class="welcome-stats">
+                <div class="stat-card"><span class="stat-number">🏆</span><span class="stat-label">Level: Master</span></div>
+                <div class="stat-card"><span class="stat-number">🔐</span><span class="stat-label">Status: Hacked</span></div>
+                <div class="stat-card"><span class="stat-number">⭐</span><span class="stat-label">Reputation: 9999</span></div>
+                <div class="stat-card"><span class="stat-number">🚀</span><span class="stat-label">Skill: Pro</span></div>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Keluar (Logout)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 🔒 RAHASIA: Password tersembunyi di sini!
+        // ============================================
+
+        const ENCRYPTED = [0x1B, 0x1A, 0x1D, 0x1C, 0x1F, 0x1E, 0x19, 0x18, 0x1B, 0x1A, 0x1D];
+        const KEY = "H4CK3R2026";
+
+        function decrypt(encrypted, key) {
+            let result = "";
+            for (let i = 0; i < encrypted.length; i++) {
+                let charCode = encrypted[i];
+                let keyChar = key.charCodeAt(i % key.length);
+                let decryptedChar = String.fromCharCode(charCode ^ keyChar);
+                result += decryptedChar;
+            }
+            return result;
+        }
+
+        const PASSWORD = decrypt(ENCRYPTED, KEY);
+        const USERNAME = "Azrielal@gmail.com";
+
+        // Tampilkan password di console dengan sangat jelas
+        console.log("%c🔑 PASSWORD ASLI: " + PASSWORD, "font-size:20px;color:#0f0;font-weight:bold;");
+        console.log("%c📧 USERNAME: " + USERNAME, "font-size:16px;color:#ff0;");
+        console.log("%c⚠️ Copy password di atas, paste ke field!", "font-size:14px;color:#fff;");
+
+        // ============================================
+        // LOGIN HANDLER
+        // ============================================
+
+        document.getElementById('loginFormSubmit').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('usernameInput');
+            const passwordInput = document.getElementById('passwordInput');
+            const messageDiv = document.getElementById('message');
+            const loginBtn = document.getElementById('loginBtn');
+
+            messageDiv.className = '';
+            messageDiv.style.display = 'none';
+
+            const enteredUsername = usernameInput.value.trim();
+            const enteredPassword = passwordInput.value;
+
+            // Validasi username
+            if (enteredUsername !== USERNAME) {
+                messageDiv.className = 'error';
+                messageDiv.style.display = 'block';
+                messageDiv.innerHTML = `
+                    ❌ <strong>Email salah!</strong><br>
+                    <span style="font-size:13px;font-weight:400;color:rgba(255,0,68,0.7);">
+                        Gunakan email: <strong>${USERNAME}</strong>
+                    </span>
+                `;
+                return;
+            }
+
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+
+            setTimeout(() => {
+                if (enteredPassword === PASSWORD) {
+                    showWelcomePage("Azrielal");
+                } else {
+                    // Tampilkan password yang benar di pesan error
+                    messageDiv.className = 'error';
+                    messageDiv.style.display = 'block';
+                    messageDiv.innerHTML = `
+                        ❌ <strong>Password salah!</strong><br>
+                        <span style="font-size:13px;font-weight:400;color:rgba(255,0,68,0.7);">
+                            Password yang benar adalah:
+                        </span><br>
+                        <div class="error-password">${PASSWORD}</div>
+                        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.3);">
+                            💡 Copy teks di atas, lalu paste ke field password.
+                        </div>
+                    `;
+                    document.querySelector('.container').style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        document.querySelector('.container').style.animation = '';
+                    }, 500);
+                }
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }, 1500);
+        });
+
+        // ============================================
+        // FUNGSI TAMPILKAN HALAMAN SELAMAT
+        // ============================================
+
+        function showWelcomePage(username) {
+            document.getElementById('loginForm').classList.add('hidden');
+            const welcomePage = document.getElementById('welcomePage');
+            welcomePage.classList.add('show');
+            document.getElementById('displayUsername').textContent = '👤 @' + username;
+            document.body.classList.add('hacked');
+            document.getElementById('statusDot').className = 'status-dot hacked';
+            document.getElementById('statusText').textContent = '💀 SYSTEM HACKED';
+            createCelebration();
+            createMatrixRain();
+            document.querySelector('.container').style.boxShadow = 
+                '0 25px 50px rgba(0,0,0,0.5), 0 0 100px rgba(255,0,255,0.2)';
+        }
+
+        // ============================================
+        // FUNGSI LOGOUT
+        // ============================================
+
+        function logout() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('welcomePage').classList.remove('show');
+            document.body.classList.remove('hacked');
+            document.getElementById('statusDot').className = 'status-dot offline';
+            document.getElementById('statusText').textContent = '🔒 Secure Connection';
+            document.querySelector('.container').style.boxShadow = 
+                '0 25px 50px rgba(0,0,0,0.5), 0 0 100px rgba(0,255,255,0.05)';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('matrixRain').innerHTML = '';
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = '';
+            messageDiv.style.display = 'none';
+        }
+
+        // ============================================
+        // FUNGSI TAMBAHAN
+        // ============================================
+
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%,100% { transform:translateX(0); }
+                20% { transform:translateX(-10px); }
+                40% { transform:translateX(10px); }
+                60% { transform:translateX(-10px); }
+                80% { transform:translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 20) + 's';
+                particle.style.width = (1 + Math.random() * 3) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        function createCelebration() {
+            const emojis = ['🎉','🎊','⭐','✨','🔥','💀','🚀','👾','🌈','💎'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    el.style.position = 'fixed';
+                    el.style.left = Math.random() * 100 + '%';
+                    el.style.top = Math.random() * 100 + '%';
+                    el.style.fontSize = (20 + Math.random() * 50) + 'px';
+                    el.style.pointerEvents = 'none';
+                    el.style.zIndex = '9999';
+                    el.style.animation = `floatUp ${1 + Math.random() * 2.5}s ease-out forwards`;
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), 3500);
+                }, i * 60);
+            }
+        }
+
+        function createMatrixRain() {
+            const container = document.getElementById('matrixRain');
+            container.innerHTML = '';
+            const chars = '01';
+            for (let i = 0; i < 100; i++) {
+                const span = document.createElement('span');
+                span.textContent = chars[Math.floor(Math.random() * chars.length)];
+                span.style.left = Math.random() * 100 + '%';
+                span.style.animationDelay = Math.random() * 20 + 's';
+                span.style.animationDuration = (15 + Math.random() * 20) + 's';
+                span.style.fontSize = (10 + Math.random() * 20) + 'px';
+                container.appendChild(span);
+            }
+        }
+
+        const floatStyle = document.createElement('style');
+        floatStyle.textContent = `
+            @keyframes floatUp {
+                0% { opacity:1; transform:translateY(0) rotate(0deg); }
+                100% { opacity:0; transform:translateY(-200px) rotate(720deg); }
+            }
+        `;
+        document.head.appendChild(floatStyle);
+
+        console.log('%c🔥 HackerGram - Siap dibobol!', 'font-size:18px;color:#0f0;');
+        console.log('%c📧 Username: ' + USERNAME, 'font-size:14px;color:#ff0;');
+        console.log('%c🔑 Password: ' + PASSWORD, 'font-size:14px;color:#0ff;');
+        console.log('%c✅ Copy password dari console atau dari pesan error!', 'font-size:14px;color:#fff;');
+    </script>
+
+</body>
+</html>
